@@ -1,0 +1,112 @@
+//#define _CRTDBG_MAP_ALLOC
+//#include <stdlib.h>
+//#include <crtdbg.h>
+
+#include <iostream>
+#include <vector>
+#include <string>
+#include <utility>
+#include <algorithm>
+#include <vld.h>
+
+using namespace std;
+
+class Parking;
+
+class Car {
+public:
+    string number{};
+    string make{};
+    string color{};
+
+    Car(string number, string make, string color) {
+        this->number = number;
+        this->make = make;
+        this->color = color;
+    }
+
+    void parking(Parking& parkingLot);
+
+    void leave(Parking& parkingLot);
+
+    ~Car() {};
+};
+
+class Parking {
+public:
+    vector<pair<Car, bool>> cars{};
+
+    void printParkedCars() {
+        for (int i = 0; i < cars.size(); i++) {
+            if (cars[i].second) {
+                cout << "Number: " << cars[i].first.number << endl;
+                cout << "Make: " << cars[i].first.make << endl;
+                cout << "Color: " << cars[i].first.color << endl;
+            }
+        }
+    }
+
+    void isParked(Car car) {
+        auto it = find_if(cars.begin(), cars.end(),
+            [car](const pair<Car, bool>& carPair) {
+                return carPair.first.number == car.number;
+            });
+        if (it != cars.end()) {
+            cout << "Car with number " << car.number << " is parked" << endl;
+        }
+        else {
+            cout << "Car with number " << car.number << " is not parked" << endl;
+        }
+    }
+
+    ~Parking() {};
+};
+
+void Car::parking(Parking& parkingLot) {
+    auto it = find_if(parkingLot.cars.begin(), parkingLot.cars.end(),
+        [this](const pair<Car, bool>& carPair) {
+            return carPair.first.number == this->number;
+        });
+
+    if (it == parkingLot.cars.end()) {
+        parkingLot.cars.push_back(make_pair(*this, true));
+    }
+    else {
+        parkingLot.cars[it - parkingLot.cars.begin()].second = true;
+    }
+}
+
+void Car::leave(Parking& parkingLot) {
+    auto it = find_if(parkingLot.cars.begin(), parkingLot.cars.end(),
+        [this](const pair<Car, bool>& carPair) {
+            return carPair.first.number == this->number;
+        });
+    if (it != parkingLot.cars.end()) {
+        parkingLot.cars[it - parkingLot.cars.begin()].second = false;
+    }
+}
+
+int main() {
+    Parking parkingLot{};
+
+    Car car1("A126AA_26", "BMW", "blue");
+    Car car2("E707KA_23", "Nissan", "grey");
+    Car car3("A005AA_05", "Lada", "black");
+    Car car4("T777TT_777", "Ferrari", "red");
+
+    Car* ptrcar1 = &car1;
+    Car* ptrcar2 = &car2;
+    Car* ptrcar3 = &car3;
+    Car* ptrcar4 = &car4;
+
+    car1.parking(parkingLot);
+    car2.parking(parkingLot);
+    parkingLot.isParked(car1);
+
+    car1.leave(parkingLot);
+    parkingLot.printParkedCars();
+
+//    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
+//    _CrtDumpMemoryLeaks();
+    return 0;
+}
