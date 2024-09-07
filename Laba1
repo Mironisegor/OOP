@@ -15,14 +15,12 @@ class Parking;
 
 class Car {
 public:
-    string number{};
-    string make{};
-    string color{};
+    string number{}, make{}, colour{};
 
-    Car(string number, string make, string color) {
+    Car(string number, string make, string colour) {
         this->number = number;
         this->make = make;
-        this->color = color;
+        this->colour = colour;
     }
 
     void parking(Parking& parkingLot);
@@ -37,16 +35,23 @@ public:
     vector<pair<Car, bool>> cars{};
 
     void printParkedCars() {
+        int flag = 0;
         for (int i = 0; i < cars.size(); i++) {
             if (cars[i].second) {
+                if (!flag) {
+                    cout << "Parked cars:" << endl;
+                    flag = 1;
+                }
                 cout << "Number: " << cars[i].first.number << endl;
                 cout << "Make: " << cars[i].first.make << endl;
-                cout << "Color: " << cars[i].first.color << endl;
+                cout << "Color: " << cars[i].first.colour << endl;
             }
+            cout << endl;
         }
     }
 
     void isParked(Car car) {
+        //  Поиск машины с определенным номером
         auto it = find_if(cars.begin(), cars.end(),
             [car](const pair<Car, bool>& carPair) {
                 return carPair.first.number == car.number;
@@ -63,6 +68,7 @@ public:
 };
 
 void Car::parking(Parking& parkingLot) {
+    //  Поиск машины с определенным номером, для того поменять метку присутствия на парковке
     auto it = find_if(parkingLot.cars.begin(), parkingLot.cars.end(),
         [this](const pair<Car, bool>& carPair) {
             return carPair.first.number == this->number;
@@ -77,10 +83,12 @@ void Car::parking(Parking& parkingLot) {
 }
 
 void Car::leave(Parking& parkingLot) {
+    //  Поиск машины с определенным номером, для того поменять метку присутствия на парковке
     auto it = find_if(parkingLot.cars.begin(), parkingLot.cars.end(),
         [this](const pair<Car, bool>& carPair) {
             return carPair.first.number == this->number;
         });
+    
     if (it != parkingLot.cars.end()) {
         parkingLot.cars[it - parkingLot.cars.begin()].second = false;
     }
@@ -93,20 +101,30 @@ int main() {
     Car car2("E707KA_23", "Nissan", "grey");
     Car car3("A005AA_05", "Lada", "black");
     Car car4("T777TT_777", "Ferrari", "red");
-
-    Car* ptrcar1 = &car1;
-    Car* ptrcar2 = &car2;
-    Car* ptrcar3 = &car3;
-    Car* ptrcar4 = &car4;
+    Car car5("T136AT_126", "Mercedes-Benz", "black");
+    Car car6("O777OO_123", "Toyota", "purple");
+    Car car7("E025EA_05", "Suzuki", "yellow");
+    Car car8("H7117TH_09", "Land Lover", "pink");
+    Car car9("K005BB_25", "Jaguar", "green");
+    Car car10("T100PP_07", "Audi", "white");
 
     car1.parking(parkingLot);
     car2.parking(parkingLot);
-    parkingLot.isParked(car1);
+    car3.parking(parkingLot);
+    car4.parking(parkingLot);
+    car5.parking(parkingLot);
+    car6.parking(parkingLot);
+    car7.parking(parkingLot);
+    car8.parking(parkingLot);
+    car9.parking(parkingLot);
+    car10.parking(parkingLot);
+
+    parkingLot.isParked(car7);
 
     car1.leave(parkingLot);
     parkingLot.printParkedCars();
 
-//    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
-//    _CrtDumpMemoryLeaks();
+    //    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
+    //    _CrtDumpMemoryLeaks();
     return 0;
 }
