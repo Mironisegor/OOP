@@ -32,20 +32,32 @@ public:
 
 class Parking {
 public:
-    vector<pair<Car*, bool>> cars{};
+    vector<pair<Car*, bool>> cars{10};
 
     ~Parking() {};
 };
 
 void Car::parking(Parking& parkingLot) {
-    //  Поиск машины с определенным номером, для того поменять метку присутствия на парковке
+    //  Поиск машины с определенным номером, чтобы изменить метку присутствия на парковке
     auto it = find_if(parkingLot.cars.begin(), parkingLot.cars.end(),
         [this](const pair<Car*, bool>& carPair) {
-            return carPair.first->number == this->number;
+            return carPair.first != nullptr && carPair.first->number == this->number; // Проверка на nullptr
         });
 
     if (it == parkingLot.cars.end()) {
-        parkingLot.cars.push_back(make_pair(this, true));
+        int flag = 0;
+        for (int i = 0; i < 10; i++) {
+            if (parkingLot.cars[i].first == nullptr) {
+                parkingLot.cars[i].first = this;
+                parkingLot.cars[i].second = true;
+                flag = 1;
+                cout << "Car with number " << this->number << " parked" << endl;
+                break;
+            }
+        }
+        if (!flag) {
+            parkingLot.cars.push_back(make_pair(this, true));
+        }
     }
     else {
         parkingLot.cars[it - parkingLot.cars.begin()].second = true;
@@ -118,10 +130,11 @@ int main() {
     Car* ptrcar9 = &car9;
     Car car10("T100PP_07", "Audi", "white");
     Car* ptrcar10 = &car10;
+    Car car11("T777TT_77", "Audi", "white");
+    Car* ptrcar11 = &car11;
 
     car1.parking(parkingLot);
     car2.parking(parkingLot);
-    car3.parking(parkingLot);
     car3.parking(parkingLot);
     car4.parking(parkingLot);
     car5.parking(parkingLot);
@@ -130,11 +143,14 @@ int main() {
     car8.parking(parkingLot);
     car9.parking(parkingLot);
     car10.parking(parkingLot);
+    car11.parking(parkingLot);
 
     isParked(ptrcar7, parkingLot);
     isParked(ptrcar1, parkingLot);
 
     car1.leave(parkingLot);
+    car3.leave(parkingLot);
+    car5.leave(parkingLot);
     printParkedCars(parkingLot);
 
     return 0;
