@@ -1,3 +1,11 @@
+/*
+ЮФУ, ИКТИБ, МОП ЭВМ
+Объектно-ориентированное программирование
+КТбо2-6, Миронов Егор Сергеевич
+Лабораторная работа №1
+08.09.2024
+*/
+
 #include <iostream>
 #include <vector>
 #include <string>
@@ -7,11 +15,11 @@
 
 using namespace std;
 
-class Parking;
+class Parking; // Раннее объявления класса для видимости в классе Car
 
 class Car {
 private:
-    string number{}, make{}, colour{};
+    string number{}, make{}, colour{}; //  Номер, марка, цвет автомобиля
 public:
     Car(string number, string make, string colour) {
         this->number = number;
@@ -37,6 +45,7 @@ public:
     ~Parking() {};
 };
 
+//  Метод для парковки авто
 void Car::parking(Parking& parkingLot) {
     //  Поиск машины с определенным номером, чтобы изменить метку присутствия на парковке
     auto it = find_if(parkingLot.cars.begin(), parkingLot.cars.end(),
@@ -64,12 +73,12 @@ void Car::parking(Parking& parkingLot) {
     }
 }
 
+//  Метод для выезда авто с парковки
 void Car::leave(Parking& parkingLot) {
-    //  Поиск машины с определенным номером, для того поменять метку присутствия на парковке
     auto it = find_if(parkingLot.cars.begin(), parkingLot.cars.end(),
         [this](const pair<Car*, bool>& carPair) {
             return carPair.first->number == this->number;
-        });
+        });  //  Поиск машины с определенным номером, для того поменять метку присутствия на парковке
     
     if (it != parkingLot.cars.end()) {
         cout << "Car with number " << this->number << " leaved parking" << endl;
@@ -77,12 +86,12 @@ void Car::leave(Parking& parkingLot) {
     }
 }
 
+//  Дружественная функция для проверки присутствия авто на стоянке
 void isParked(Car* car, Parking& parkingLot) {
-    //  Поиск машины с определенным номером
     auto it = find_if(parkingLot.cars.begin(), parkingLot.cars.end(),
         [car](const pair<Car*, bool>& carPair) {
             return carPair.first->number == car->number;
-        });
+        }); //  Поиск машины с определенным номером
     if (it != parkingLot.cars.end()) {
         cout << "Car with number " << car->number << " is parked" << endl << endl;
     }
@@ -91,6 +100,7 @@ void isParked(Car* car, Parking& parkingLot) {
     }
 }
 
+//  Дружественная функция для вывода всех припаркованных машин
 void printParkedCars(Parking &parkingLot) {
     int flag = 0;
     for (int i = 0; i < parkingLot.cars.size(); i++) {
@@ -110,6 +120,7 @@ void printParkedCars(Parking &parkingLot) {
 int main() {
     Parking parkingLot{};
 
+    //  Создаем объекты класса Car и указатели на них
     Car car1("A126AA_26", "BMW", "blue");
     Car* ptrcar1 = &car1;
     Car car2("E707KA_23", "Nissan", "grey");
@@ -133,6 +144,7 @@ int main() {
     Car car11("T777TT_77", "Audi", "white");
     Car* ptrcar11 = &car11;
 
+    //  Паркуем автомобили
     car1.parking(parkingLot);
     car2.parking(parkingLot);
     car3.parking(parkingLot);
@@ -145,12 +157,16 @@ int main() {
     car10.parking(parkingLot);
     car11.parking(parkingLot);
 
+    //  Проверяем присутствие авто на парковке
     isParked(ptrcar7, parkingLot);
     isParked(ptrcar1, parkingLot);
 
+    //  Выезд авто с парковки
     car1.leave(parkingLot);
     car3.leave(parkingLot);
     car5.leave(parkingLot);
+
+    //  Выводим список припаркованных автомобилей
     printParkedCars(parkingLot);
 
     return 0;
