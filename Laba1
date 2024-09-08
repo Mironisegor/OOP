@@ -1,7 +1,3 @@
-//#define _CRTDBG_MAP_ALLOC
-//#include <stdlib.h>
-//#include <crtdbg.h>
-
 #include <iostream>
 #include <vector>
 #include <string>
@@ -14,9 +10,9 @@ using namespace std;
 class Parking;
 
 class Car {
-public:
+private:
     string number{}, make{}, colour{};
-
+public:
     Car(string number, string make, string colour) {
         this->number = number;
         this->make = make;
@@ -27,42 +23,16 @@ public:
 
     void leave(Parking& parkingLot);
 
+    friend void printParkedCars(Parking& parkingLot);
+
+    friend void isParked(Car* car, Parking& parkingLot);
+
     ~Car() {};
 };
 
 class Parking {
 public:
-    vector<pair<Car, bool>> cars{};
-
-    void printParkedCars() {
-        int flag = 0;
-        for (int i = 0; i < cars.size(); i++) {
-            if (cars[i].second) {
-                if (!flag) {
-                    cout << "Parked cars:" << endl;
-                    flag = 1;
-                }
-                cout << "Number: " << cars[i].first.number << endl;
-                cout << "Make: " << cars[i].first.make << endl;
-                cout << "Color: " << cars[i].first.colour << endl;
-            }
-            cout << endl;
-        }
-    }
-
-    void isParked(Car car) {
-        //  Поиск машины с определенным номером
-        auto it = find_if(cars.begin(), cars.end(),
-            [car](const pair<Car, bool>& carPair) {
-                return carPair.first.number == car.number;
-            });
-        if (it != cars.end()) {
-            cout << "Car with number " << car.number << " is parked" << endl;
-        }
-        else {
-            cout << "Car with number " << car.number << " is not parked" << endl;
-        }
-    }
+    vector<pair<Car*, bool>> cars{};
 
     ~Parking() {};
 };
@@ -70,12 +40,12 @@ public:
 void Car::parking(Parking& parkingLot) {
     //  Поиск машины с определенным номером, для того поменять метку присутствия на парковке
     auto it = find_if(parkingLot.cars.begin(), parkingLot.cars.end(),
-        [this](const pair<Car, bool>& carPair) {
-            return carPair.first.number == this->number;
+        [this](const pair<Car*, bool>& carPair) {
+            return carPair.first->number == this->number;
         });
 
     if (it == parkingLot.cars.end()) {
-        parkingLot.cars.push_back(make_pair(*this, true));
+        parkingLot.cars.push_back(make_pair(this, true));
     }
     else {
         parkingLot.cars[it - parkingLot.cars.begin()].second = true;
@@ -85,12 +55,43 @@ void Car::parking(Parking& parkingLot) {
 void Car::leave(Parking& parkingLot) {
     //  Поиск машины с определенным номером, для того поменять метку присутствия на парковке
     auto it = find_if(parkingLot.cars.begin(), parkingLot.cars.end(),
-        [this](const pair<Car, bool>& carPair) {
-            return carPair.first.number == this->number;
+        [this](const pair<Car*, bool>& carPair) {
+            return carPair.first->number == this->number;
         });
     
     if (it != parkingLot.cars.end()) {
+        cout << "Car with number " << this->number << " leaved parking" << endl;
         parkingLot.cars[it - parkingLot.cars.begin()].second = false;
+    }
+}
+
+void isParked(Car* car, Parking& parkingLot) {
+    //  Поиск машины с определенным номером
+    auto it = find_if(parkingLot.cars.begin(), parkingLot.cars.end(),
+        [car](const pair<Car*, bool>& carPair) {
+            return carPair.first->number == car->number;
+        });
+    if (it != parkingLot.cars.end()) {
+        cout << "Car with number " << car->number << " is parked" << endl << endl;
+    }
+    else {
+        cout << "Car with number " << car->number << " is not parked" << endl << endl;
+    }
+}
+
+void printParkedCars(Parking &parkingLot) {
+    int flag = 0;
+    for (int i = 0; i < parkingLot.cars.size(); i++) {
+        if (parkingLot.cars[i].second) {
+            if (!flag) {
+                cout << "Parked cars:" << endl;
+                flag = 1;
+            }
+            cout << "Number: " << parkingLot.cars[i].first->number << endl;
+            cout << "Make: " << parkingLot.cars[i].first->make << endl;
+            cout << "Color: " << parkingLot.cars[i].first->colour << endl;
+        }
+        cout << endl;
     }
 }
 
@@ -98,18 +99,29 @@ int main() {
     Parking parkingLot{};
 
     Car car1("A126AA_26", "BMW", "blue");
+    Car* ptrcar1 = &car1;
     Car car2("E707KA_23", "Nissan", "grey");
+    Car* ptrcar2 = &car2;
     Car car3("A005AA_05", "Lada", "black");
+    Car* ptrcar3 = &car3;
     Car car4("T777TT_777", "Ferrari", "red");
+    Car* ptrcar4 = &car4;
     Car car5("T136AT_126", "Mercedes-Benz", "black");
+    Car* ptrcar5 = &car5;
     Car car6("O777OO_123", "Toyota", "purple");
+    Car* ptrcar6 = &car6;
     Car car7("E025EA_05", "Suzuki", "yellow");
+    Car* ptrcar7 = &car7;
     Car car8("H7117TH_09", "Land Lover", "pink");
+    Car* ptrcar8 = &car8;
     Car car9("K005BB_25", "Jaguar", "green");
+    Car* ptrcar9 = &car9;
     Car car10("T100PP_07", "Audi", "white");
+    Car* ptrcar10 = &car10;
 
     car1.parking(parkingLot);
     car2.parking(parkingLot);
+    car3.parking(parkingLot);
     car3.parking(parkingLot);
     car4.parking(parkingLot);
     car5.parking(parkingLot);
@@ -119,12 +131,11 @@ int main() {
     car9.parking(parkingLot);
     car10.parking(parkingLot);
 
-    parkingLot.isParked(car7);
+    isParked(ptrcar7, parkingLot);
+    isParked(ptrcar1, parkingLot);
 
     car1.leave(parkingLot);
-    parkingLot.printParkedCars();
+    printParkedCars(parkingLot);
 
-    //    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
-    //    _CrtDumpMemoryLeaks();
     return 0;
 }
