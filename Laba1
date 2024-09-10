@@ -1,14 +1,5 @@
-/*
-ЮФУ, ИКТИБ, МОП ЭВМ
-Объектно-ориентированное программирование
-КТбо2-6, Миронов Егор Сергеевич
-Лабораторная работа №1
-08.09.2024
-*/
-
 #include <iostream>
 #include <vector>
-#include <string>
 #include <utility>
 #include <algorithm>
 #include <vld.h>
@@ -21,84 +12,78 @@ class Car {
 private:
     string number{}, make{}, colour{}; //  Номер, марка, цвет автомобиля
 public:
-    Car(string number, string make, string colour) {
+    Car(string number, string make, string colour, Parking& parkingLot) {
         this->number = number;
         this->make = make;
         this->colour = colour;
+        addToArray(parkingLot);
     }
+
+    bool operator==(const Car& other) const {
+        return this->number == other.number;
+    }
+
+    //Добавление объекта типа Car в вектор в классе Parking
+    void addToArray(Parking& parkingLot);
 
     void parking(Parking& parkingLot);
 
-    void leave(Parking& parkingLot);
-
+    friend void leave(Parking& parkingLot, int num);
+    
     friend void printParkedCars(Parking& parkingLot);
 
-    friend void isParked(Car* car, Parking& parkingLot);
+    friend void isParked(Parking& parkingLot, int num);
 
     ~Car() {};
 };
 
 class Parking {
+private:
+    vector<pair<Car, bool>> cars;
 public:
-    vector<pair<Car*, bool>> cars{10};
+    friend void isParked(Parking& parkingLot, int num);
 
-    ~Parking() {};
+    friend void printParkedCars(Parking& parkingLot);
+
+    friend void leave(Parking& parkingLot, int num);
+
+    friend class Car;
+
+    ~Parking() {}
 };
 
 //  Метод для парковки авто
 void Car::parking(Parking& parkingLot) {
-    //  Поиск машины с определенным номером, чтобы изменить метку присутствия на парковке
-    auto it = find_if(parkingLot.cars.begin(), parkingLot.cars.end(),
-        [this](const pair<Car*, bool>& carPair) {
-            return carPair.first != nullptr && carPair.first->number == this->number; // Проверка на nullptr
+    auto it = std::find_if(parkingLot.cars.begin(), parkingLot.cars.end(),
+        [this](const pair<Car, bool>& carPair) {
+            return carPair.first == *this;
         });
 
-    if (it == parkingLot.cars.end()) {
-        int flag = 0;
-        for (int i = 0; i < 10; i++) {
-            if (parkingLot.cars[i].first == nullptr) {
-                parkingLot.cars[i].first = this;
-                parkingLot.cars[i].second = true;
-                flag = 1;
-                cout << "Car with number " << this->number << " parked" << endl;
-                break;
-            }
-        }
-        if (!flag) {
-            parkingLot.cars.push_back(make_pair(this, true));
-        }
-    }
-    else {
-        parkingLot.cars[it - parkingLot.cars.begin()].second = true;
+    if (it != parkingLot.cars.end()) {
+        auto index = it - parkingLot.cars.begin();
+        parkingLot.cars[index].second = true;
+        std::cout << "Car with number " << this->number << " was parked" << std::endl;
     }
 }
 
-//  Метод для выезда авто с парковки
-void Car::leave(Parking& parkingLot) {
-    auto it = find_if(parkingLot.cars.begin(), parkingLot.cars.end(),
-        [this](const pair<Car*, bool>& carPair) {
-            return carPair.first->number == this->number;
-        });  //  Поиск машины с определенным номером, для того поменять метку присутствия на парковке
-    
-    if (it != parkingLot.cars.end()) {
-        cout << "Car with number " << this->number << " leaved parking" << endl;
-        parkingLot.cars[it - parkingLot.cars.begin()].second = false;
-    }
+
+//  Метод для добавления авто в вектор cars
+void Car::addToArray(Parking& parkingLot) {
+    parkingLot.cars.push_back(make_pair(*this, false));
 }
 
 //  Дружественная функция для проверки присутствия авто на стоянке
-void isParked(Car* car, Parking& parkingLot) {
-    auto it = find_if(parkingLot.cars.begin(), parkingLot.cars.end(),
-        [car](const pair<Car*, bool>& carPair) {
-            return carPair.first->number == car->number;
-        }); //  Поиск машины с определенным номером
-    if (it != parkingLot.cars.end()) {
-        cout << "Car with number " << car->number << " is parked" << endl << endl;
+void isParked(Parking& parkingLot, int num) {
+    pair<Car, bool>& carPair = parkingLot.cars[num];
+
+    if (carPair.second) {
+        cout << "Car with number " << carPair.first.number << " is parked" << endl;
     }
-    else {
-        cout << "Car with number " << car->number << " is not parked" << endl << endl;
+    else if (!carPair.second) {
+        cout << "Car with number " << carPair.first.number << " is not parked" << endl;
     }
 }
+
 
 //  Дружественная функция для вывода всех припаркованных машин
 void printParkedCars(Parking &parkingLot) {
@@ -109,65 +94,100 @@ void printParkedCars(Parking &parkingLot) {
                 cout << "Parked cars:" << endl;
                 flag = 1;
             }
-            cout << "Number: " << parkingLot.cars[i].first->number << endl;
-            cout << "Make: " << parkingLot.cars[i].first->make << endl;
-            cout << "Color: " << parkingLot.cars[i].first->colour << endl;
+            cout << "Number: " << parkingLot.cars[i].first.number << endl;
+            cout << "Make: " << parkingLot.cars[i].first.make << endl;
+            cout << "Color: " << parkingLot.cars[i].first.colour << endl << endl;
         }
-        cout << endl;
+    }
+}
+
+//  Дружественная функция для выезда авто с парковки
+void leave(Parking& parkingLot, int num) {
+    pair<Car, bool>& carPair = parkingLot.cars[num];
+
+    if (carPair.first.number == carPair.first.number) {
+        carPair.second = false;
+        cout << "Car with number " << carPair.first.number << " left the parking." << endl;
     }
 }
 
 int main() {
+    setlocale(LC_ALL, "ru");
     Parking parkingLot{};
+    int scanPrint{};
 
-    //  Создаем объекты класса Car и указатели на них
-    Car car1("A126AA_26", "BMW", "blue");
-    Car* ptrcar1 = &car1;
-    Car car2("E707KA_23", "Nissan", "grey");
-    Car* ptrcar2 = &car2;
-    Car car3("A005AA_05", "Lada", "black");
-    Car* ptrcar3 = &car3;
-    Car car4("T777TT_777", "Ferrari", "red");
-    Car* ptrcar4 = &car4;
-    Car car5("T136AT_126", "Mercedes-Benz", "black");
-    Car* ptrcar5 = &car5;
-    Car car6("O777OO_123", "Toyota", "purple");
-    Car* ptrcar6 = &car6;
-    Car car7("E025EA_05", "Suzuki", "yellow");
-    Car* ptrcar7 = &car7;
-    Car car8("H7117TH_09", "Land Lover", "pink");
-    Car* ptrcar8 = &car8;
-    Car car9("K005BB_25", "Jaguar", "green");
-    Car* ptrcar9 = &car9;
-    Car car10("T100PP_07", "Audi", "white");
-    Car* ptrcar10 = &car10;
-    Car car11("T777TT_77", "Audi", "white");
-    Car* ptrcar11 = &car11;
+    cout << "Хотите ввести данные сами через консоль? Выберите 1, если да, иначе 0: ";
+    cin >> scanPrint;
 
-    //  Паркуем автомобили
-    car1.parking(parkingLot);
-    car2.parking(parkingLot);
-    car3.parking(parkingLot);
-    car4.parking(parkingLot);
-    car5.parking(parkingLot);
-    car6.parking(parkingLot);
-    car7.parking(parkingLot);
-    car8.parking(parkingLot);
-    car9.parking(parkingLot);
-    car10.parking(parkingLot);
-    car11.parking(parkingLot);
+    try {
+        //  Обрабатываем случай ввода с консоли
+        if (scanPrint) {
+            int oneMore = 1;
+            while (oneMore) {
+                string number{}, make{}, colour{};
+                cout << "Введите номер: ";
+                cin >> number;
+                cout << "Введите марку: ";
+                cin >> make;
+                cout << "Введите цвет: ";
+                cin >> colour;
 
-    //  Проверяем присутствие авто на парковке
-    isParked(ptrcar7, parkingLot);
-    isParked(ptrcar1, parkingLot);
+                Car* newCar = new Car(number, make, colour, parkingLot);
+                newCar->addToArray(parkingLot);
 
-    //  Выезд авто с парковки
-    car1.leave(parkingLot);
-    car3.leave(parkingLot);
-    car5.leave(parkingLot);
+                int toParking{};
+                cout << "Припарковать этот автомобиль? Выберите 1, если да, иначе 0? ";
+                cin >> toParking;
 
-    //  Выводим список припаркованных автомобилей
-    printParkedCars(parkingLot);
+                if (toParking) {
+                    newCar->parking(parkingLot);
+                }
 
+                cout << "Ввести данные еще одного автомобиля? Выберите 1, если да, иначе 0: ";
+                cin >> oneMore;
+                if (!oneMore) {
+                    oneMore = 0;
+                }
+                delete newCar;
+            }
+            //  Проверяем присутствие авто на парковке
+            isParked(parkingLot, 0);
+            leave(parkingLot, 0);
+            //  Выводим список припаркованных авто
+            printParkedCars(parkingLot);
+        }
+        //  Обрабатываем случай ввода не с консоли
+        else {
+            Car car1("A126AA_26", "BMW", "blue", parkingLot);
+            Car car2("E707KA_23", "Nissan", "grey", parkingLot);
+            Car car3("A005AA_05", "Lada", "black", parkingLot);
+            Car car4("T777TT_777", "Ferrari", "red", parkingLot);
+            Car car5("T136AT_126", "Mercedes-Benz", "black", parkingLot);
+
+            //  Паркуем автомобили
+            car1.parking(parkingLot);
+            car2.parking(parkingLot);
+            car3.parking(parkingLot);
+            car4.parking(parkingLot);
+            car5.parking(parkingLot);
+
+            //  Проверяем присутствие авто на парковке
+            isParked(parkingLot, 0);
+            isParked(parkingLot, 2);
+
+            //  Выезд авто с парковки
+            leave(parkingLot, 0);
+            leave(parkingLot, 2);
+            leave(parkingLot, 4);
+
+            //  Выводим список припаркованных автомобилей
+            printParkedCars(parkingLot);
+        }
+    }
+    //Ловим ошибку и выводим ее содержание
+    catch (const exception& e) {
+        cerr << "Ошибка: " << e.what() << endl;
+        return 1;
+    }
     return 0;
 }
