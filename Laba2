@@ -1,0 +1,66 @@
+#include <iostream>
+#include <vld.h>
+
+using std::cin;
+using std::cout;
+
+//Родительский класс
+class Progression {
+protected:
+	double start{}, end{}, dif{}; //первый элемент, второй элемент, разница между двуми членами
+
+public:
+	//Подсчет суммы прогрессии 
+	virtual double sum() {
+		return 0;
+	}
+};
+
+//Класс для арифметической прогрессии
+class Linear: public Progression {
+public:
+	Linear(double start, double end, double dif) {
+		this->start = start;
+		this->end = end;
+		this->dif = dif;
+	}
+	//Переопределение метода для подсчета суммы арифметической прогрессии
+	double sum() override {
+		int n = ((end-start)/2) +1;
+		return ((start + end) * n) / 2;
+	}
+};
+
+//Класс для геометрической прогрессии
+class Exponential: public Progression {
+public:
+	Exponential(double start, double end, double dif) {
+		this->start = start;
+		this->end = end;
+		this->dif = dif;
+	}
+	//Переопределение метода для подсчета суммы геометрической прогрессии
+	double sum() override {
+		return (end * dif - start) / (dif - 1);
+	}
+};
+
+//Класс для вычисления суммы прогрессий
+class Count {
+public:
+	void calcProg(Progression *prog) {
+		prog->sum();
+	}
+};
+
+
+int main() {
+	Count cl1;
+	Linear cl2(1, 5, 1);
+	Exponential cl3(2, 16, 2);
+	
+	cl1.calcProg(&cl2);
+	cl1.calcProg(&cl3);
+
+	return 0;
+}
