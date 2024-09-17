@@ -49,8 +49,8 @@ public:
 //Класс для вычисления суммы прогрессий
 class Count {
 public:
+	Progression* prog = nullptr;
 	void calcProg() {
-		Progression* prog = nullptr;
 		int choose = 1, cinCout{};
 		cout << "Введите 1, если хотите ввести данные из консоли, иначе 0: ";
 		cin >> cinCout;
