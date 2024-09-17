@@ -3,6 +3,7 @@
 
 using std::cin;
 using std::cout;
+using std::endl;
 
 //Родительский класс
 class Progression {
@@ -26,7 +27,7 @@ public:
 	}
 	//Переопределение метода для подсчета суммы арифметической прогрессии
 	double sum() override {
-		int n = ((end-start)/2) +1;
+		int n = ((end-start)/dif) +1;
 		return ((start + end) * n) / 2;
 	}
 };
@@ -48,19 +49,57 @@ public:
 //Класс для вычисления суммы прогрессий
 class Count {
 public:
-	void calcProg(Progression *prog) {
-		prog->sum();
+	void calcProg() {
+		Progression* prog = nullptr;
+		int choose = 1, cinCout{};
+		cout << "Введите 1, если хотите ввести данные из консоли, иначе 0: ";
+		cin >> cinCout;
+		if (cinCout) {
+			while (true) {
+				double num1{}, num2{}, num3{};
+				cout << "Введите 1, если хотите посчитать сумму арифметической прогрессии и 0, если геометрической: ";
+				cin >> choose;
+				if (choose) {
+					cout << "Введите диапозон и разницу для ариметической прогрессии: ";
+					cin >> num1 >> num2 >> num3;
+
+					prog = new Linear(num1, num2, num3);
+				}
+				else {
+					cout << "Введите диапозон и разницу для геометрической прогрессии: ";
+					cin >> num1 >> num2 >> num3;
+
+					prog = new Exponential(num1, num2, num3);
+				}
+				cout << "Ответ: " << prog->sum() << endl;
+				delete prog;
+				cout << "Ввести данные еще раз? Введите 1, если да, иначе 0: ";
+				cin >> choose;
+
+				if (!choose) {
+					break;
+				}
+			}
+		}
+		else {
+			cout << "Сумма арифметической прогрессии для диапозона [1, 10] и разницой в 1 равна: ";
+			prog = new Linear(1, 10, 1);
+			cout << prog->sum() << endl;
+			delete prog;
+			cout << "Сумма геометрической прогрессии для диапозона [2, 64] и разницой в 2 равна: ";
+			prog = new Exponential(2, 64, 2);
+			cout << prog->sum() << endl;
+			delete prog;
+		}
 	}
 };
 
 
 int main() {
-	Count cl1;
-	Linear cl2(1, 5, 1);
-	Exponential cl3(2, 16, 2);
-	
-	cl1.calcProg(&cl2);
-	cl1.calcProg(&cl3);
+	setlocale(LC_ALL, "ru");
+	Count cl1{};
+
+	cl1.calcProg();
 
 	return 0;
 }
