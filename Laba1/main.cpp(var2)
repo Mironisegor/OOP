@@ -1,1 +1,169 @@
-f
+#include <iostream>
+#include <vector>
+#include <utility>
+#include <algorithm>
+#include <vld.h>
+
+using namespace std;
+
+class Parking; // Раннее объявления класса для видимости в классе Car
+
+class Car {
+private:
+    string number{}, make{}, colour{}; //  Номер, марка, цвет автомобиля
+    bool onParking = false;
+
+public:
+    Car(string number, string make, string colour) {
+        this->number = number;
+        this->make = make;
+        this->colour = colour;
+    }
+    //Получение номера автомобиля
+    string getNumber() {
+        return number;
+    }
+
+    //Меняем метку пристуствия
+    void setParkingStatus() {
+        onParking = false;
+    }
+
+    //Паркуем автомобиль
+    void parking(Parking& parkingLot);
+
+    //Выезд авто с парковки
+    void leave(Parking& parkingLot);
+
+    //Проверка припаркован ли автомобиль
+    void isParked() {
+        if (onParking) {
+            cout << "Car with number " << number << " is parked" << endl;
+        }
+        else {
+            cout << "Car with number " << number << " is not parked" << endl;
+        }
+    };
+
+    //Выводим авто, если оно припарковано
+    void printInfo() const {
+        if (this->onParking) {
+            cout << "Number: " << this->number << endl;
+            cout << "Make: " << this->make << endl;
+            cout << "Colour: " << this->colour << endl;
+        }
+    }
+
+    ~Car() {};
+};
+
+class Parking {
+private:
+    vector<Car> cars;
+public:
+    //Добавляем авто в vector cars
+    void addToArray(Car& car) {
+        cars.push_back(car);
+    }
+
+    //Выводим все припаркованные авто
+    void printParkedCars() {
+        cout << "Parked cars:" << endl;
+        for (const Car& car : cars) {
+            car.printInfo();
+        }
+    }
+
+    //Находим авто в векторе и меняем метку присутствия на false
+    void updateStatus(string number) {
+        for (Car& car : cars) {
+            if (car.getNumber() == number) {
+                car.setParkingStatus();
+                break;
+            }
+        }
+    }
+
+    ~Parking() {}
+};
+
+void Car:: parking(Parking& parkingLot) {
+    this->onParking = true;
+    parkingLot.addToArray(*this);
+    cout << "Car with number " << this->number << " was parked" << endl;
+};
+
+void Car:: leave(Parking& parkingLot) {
+    parkingLot.updateStatus(number);
+    cout << "Car with number " << number << " leaved parking" << endl;
+};
+
+int main() {
+    setlocale(LC_ALL, "ru");
+    Parking parkingLot{};
+    int scanPrint{};
+
+    cout << "Хотите ввести данные сами через консоль? Выберите 1, если да, иначе 0: ";
+    cin >> scanPrint;
+
+    try {
+        //  Обрабатываем случай ввода с консоли
+        if (scanPrint) {
+            int oneMore = 1;
+            while (oneMore) {
+                string number{}, make{}, colour{};
+                cout << "Введите номер: ";
+                cin >> number;
+                cout << "Введите марку: ";
+                cin >> make;
+                cout << "Введите цвет: ";
+                cin >> colour;
+
+                Car* newCar = new Car(number, make, colour);
+                newCar->parking(parkingLot);
+
+                cout << "Ввести данные еще одного автомобиля? Выберите 1, если да, иначе 0: ";
+                cin >> oneMore;
+                if (!oneMore) {
+                    oneMore = 0;
+                }
+                delete newCar;
+            }
+            //  Выводим список припаркованных авто
+            parkingLot.printParkedCars();
+        }
+        //  Обрабатываем случай ввода не с консоли
+        else {
+            Car car1("A126AA_26", "BMW", "blue");
+            Car car2("E707KA_23", "Nissan", "grey");
+            Car car3("A005AA_05", "Lada", "black");
+            Car car4("T777TT_777", "Ferrari", "red");
+            Car car5("T136AT_126", "Mercedes-Benz", "black");
+
+            //  Паркуем автомобили
+            car1.parking(parkingLot);
+            car2.parking(parkingLot);
+            car3.parking(parkingLot);
+            car4.parking(parkingLot);
+            car5.parking(parkingLot);
+
+            //  Проверяем присутствие авто на парковке
+            car1.isParked();
+            car2.isParked();
+
+            //  Выезд авто с парковки
+            car1.leave(parkingLot);
+            car2.leave(parkingLot);
+            car3.leave(parkingLot);
+
+            //  Выводим список припаркованных автомобилей
+            parkingLot.printParkedCars();
+        }
+    }
+    //Ловим ошибку и выводим ее содержание
+    catch (const exception& e) {
+        cerr << "Ошибка: " << e.what() << endl;
+        return 1;
+    }
+    return 0;
+}
