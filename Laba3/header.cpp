@@ -62,6 +62,8 @@ void Shape::move(double hor, double vert) {
 		arc[i].y += vert;
 		cout << arc[i].x << ' ' << arc[i].y << endl;
 	}
+	center.x += hor;
+	center.y += vert;
 }
 
 int Operations::Compare(Shape* first, Shape* second) {
